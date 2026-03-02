@@ -39,6 +39,7 @@ FROM alpine:3.20
 
 RUN apk add --no-cache bash ca-certificates curl
 
+RUN mkdir -p /etc/sing-box
 COPY --from=builder /usr/local/bin/sing-box /usr/local/bin/
 COPY --from=builder /usr/local/bin/cloudflared /usr/local/bin/
 COPY singargoless/entrypoint.sh /entrypoint.sh
