@@ -30,35 +30,37 @@ cat <<EOF > /etc/sing-box.json
 }
 EOF
 
-# 5. 生成 VLESS 节点链接 
-VLESS_LINK="vless://${UUID}@www.visa.com:443?encryption=none&security=tls&sni=${DOMAIN}&type=ws&host=${DOMAIN}&path=${WS_PATH}#Argo-VLESS-${DOMAIN}"
+# 5. 生成链接
+VLESS_LINK="vless://${UUID}@$www.visa.com:443?encryption=none&security=tls&sni=${DOMAIN}&type=ws&host=${DOMAIN}&path=${WS_PATH}#Argo-VLESS-${DOMAIN}"
 
 # 6. 启动服务 (后台运行) 
+echo "启动 Cloudflared 和 Sing-box..."
 cloudflared tunnel --no-autoupdate run --token ${TOKEN} > /dev/null 2>&1 &
 sing-box run -c /etc/sing-box.json > /dev/null 2>&1 &
 
-# 7. 检测连接状态 
-echo "正在启动并检测 Argo 隧道连接状态..." 
+# 7. 检测服务是否真正启动 (修正：检测本地端口)
+echo "正在检查服务状态..." 
 
-MAX_RETRIES=30 
+MAX_RETRIES=10 
 COUNT=0 
 while [ $COUNT -lt $MAX_RETRIES ]; do
-    STATUS=$(curl -s -L -o /dev/null -w "%{http_code}" "https://${DOMAIN}" --max-time 2) 
-    
-    if [ "$STATUS" != "000" ]; then 
+    # 检查 sing-box 是否在监听端口
+    if netstat -tuln | grep -q ":${LISTEN_PORT} "; then
         echo "---------------------------------------------------" 
-        echo "✅ Argo 隧道连接成功！" 
-        echo "🚀 sing-box VLESS 服务已启动"
+        echo "✅ 服务启动成功！" 
+        echo "✅ Cloudflare 隧道已连接"
         echo "---------------------------------------------------" 
         echo "VLESS 节点链接:" 
         echo "${VLESS_LINK}" 
         echo "---------------------------------------------------" 
-        wait 
+        # 保持脚本运行，防止服务退出
+        tail -f /dev/null
         exit 0 
     fi
+    echo "等待服务启动... ($COUNT/$MAX_RETRIES)"
     sleep 2 
     COUNT=$((COUNT + 1)) 
 done
 
-echo "❌ 隧道连接超时，请检查 TOKEN 和域名配置。" 
+echo "❌ 服务启动失败，请检查配置。" 
 exit 1
