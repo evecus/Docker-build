@@ -1,7 +1,13 @@
 # ---------- 第一阶段：下载 ----------
-FROM alpine:3.20 AS builder
+FROM debian:12-slim AS builder
 
-RUN apk add --no-cache curl tar jq
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        curl \
+        tar \
+        jq \
+        ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
 ARG TARGETARCH
 # 接收来自 Actions 的版本号变量，用于强制打破 Docker 缓存
@@ -29,17 +35,23 @@ RUN set -eux; \
       arm64) CF_ARCH=arm64 ;; \
       *) echo "unsupported arch: $TARGETARCH" && exit 1 ;; \
     esac; \
-    # 只要 CF_VER_TAG 变了，这一层就会重新下载
     curl -Lo /usr/local/bin/cloudflared \
       https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-${CF_ARCH}; \
     chmod +x /usr/local/bin/cloudflared
 
-# ---------- 第二阶段：运行 ----------
-FROM alpine:3.20
 
-RUN apk add --no-cache bash ca-certificates curl
+# ---------- 第二阶段：运行 ----------
+FROM debian:12-slim
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        bash \
+        ca-certificates \
+        curl && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /etc/sing-box
+
 COPY --from=builder /usr/local/bin/sing-box /usr/local/bin/
 COPY --from=builder /usr/local/bin/cloudflared /usr/local/bin/
 COPY singargoless/entrypoint.sh /entrypoint.sh
