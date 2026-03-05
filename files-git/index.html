@@ -150,106 +150,6 @@ main {
 }
 .back-row .name { color: var(--text2); }
 
-/* ── Preview panel ── */
-.preview-wrap {
-  display: none;
-  flex-direction: column;
-}
-.preview-wrap.active { display: flex; }
-
-.preview-header {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 8px 8px 0 0;
-  padding: 11px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-.preview-meta {
-  font-family: var(--mono);
-  font-size: 13px;
-  color: var(--text2);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.preview-meta strong { color: var(--text); }
-
-.btn-group { display: flex; gap: 8px; flex-shrink: 0; }
-.btn {
-  font-family: var(--mono);
-  font-size: 12px;
-  padding: 5px 12px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  transition: all .15s;
-  background: var(--bg3);
-  color: var(--text);
-}
-.btn:hover { background: var(--border); }
-.btn-primary {
-  background: var(--accent2);
-  color: #fff;
-  border-color: var(--accent);
-}
-.btn-primary:hover { background: var(--accent); }
-
-.code-wrap {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-top: none;
-  border-radius: 0 0 8px 8px;
-  overflow: auto;
-  max-height: 75vh;
-}
-.line-table {
-  border-collapse: collapse;
-  width: 100%;
-  font-family: var(--mono);
-  font-size: 13px;
-  line-height: 1.6;
-}
-.ln {
-  width: 1%;
-  min-width: 48px;
-  padding: 0 14px 0 16px;
-  text-align: right;
-  color: var(--text2);
-  border-right: 1px solid var(--border);
-  user-select: none;
-  vertical-align: top;
-  white-space: nowrap;
-}
-.lc {
-  padding: 0 16px;
-  white-space: pre;
-  color: var(--text);
-  vertical-align: top;
-}
-tr:hover .ln { color: var(--text); }
-tr:hover { background: rgba(255,255,255,.025); }
-
-.loading {
-  padding: 48px;
-  text-align: center;
-  color: var(--text2);
-  font-family: var(--mono);
-  font-size: 13px;
-}
-.binary-notice {
-  padding: 48px;
-  text-align: center;
-  color: var(--text2);
-}
-.binary-notice .big { font-size: 40px; margin-bottom: 12px; }
-
 /* ── Syncing overlay ── */
 .syncing-overlay {
   display: none;
@@ -293,25 +193,6 @@ tr:hover { background: rgba(255,255,255,.025); }
   color: var(--text2);
   line-height: 1.6;
 }
-
-/* ── Toast ── */
-.toast {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 16px;
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--text);
-  opacity: 0;
-  transform: translateY(8px);
-  transition: all .2s;
-  pointer-events: none;
-}
-.toast.show { opacity: 1; transform: translateY(0); }
 </style>
 </head>
 <body>
@@ -330,20 +211,7 @@ tr:hover { background: rgba(255,255,255,.025); }
   <!-- 目录列表 -->
   <div class="file-box" id="dir-view"></div>
 
-  <!-- 文件预览 -->
-  <div class="preview-wrap" id="preview-wrap">
-    <div class="preview-header">
-      <div class="preview-meta" id="preview-meta"></div>
-      <div class="btn-group">
-        <button class="btn" onclick="backToDir()">← 返回</button>
-        <a class="btn btn-primary" id="dl-btn" download>⬇ 下载</a>
-      </div>
-    </div>
-    <div class="code-wrap" id="code-wrap"></div>
-  </div>
 </main>
-
-<div class="toast" id="toast"></div>
 
 <!-- 同步中覆盖层 -->
 <div class="syncing-overlay" id="syncing-overlay">
@@ -355,14 +223,7 @@ tr:hover { background: rgba(255,255,255,.025); }
 </div>
 
 <script>
-const TEXT_EXTS = new Set([
-  'yaml','yml','json','toml','txt','conf','list','ini','cfg',
-  'md','sh','py','js','ts','html','css','xml','go','rs','log',
-  'env','properties','lock','gitignore','editorconfig'
-]);
-
 let currentPath = '';   // 当前目录路径（相对于根，不含前后斜杠）
-let currentFile = null; // 当前预览的文件路径
 
 // ── 最后同步时间 ──
 async function fetchLastUpdate() {
@@ -408,29 +269,6 @@ function checkSyncing() {
 }
 checkSyncing();
 
-// ── 工具函数 ──
-function ext(name) {
-  const i = name.lastIndexOf('.');
-  return i >= 0 ? name.slice(i+1).toLowerCase() : '';
-}
-
-function isText(name) {
-  return TEXT_EXTS.has(ext(name));
-}
-
-function humanSize(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
-  return (bytes/1024/1024).toFixed(1) + ' MB';
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
-}
-
 // ── 面包屑 ──
 function renderBreadcrumb(path) {
   const parts = path ? path.split('/') : [];
@@ -440,11 +278,7 @@ function renderBreadcrumb(path) {
     acc += (acc ? '/' : '') + p;
     const a = acc;
     html += '<span class="sep">/</span>';
-    if (i === parts.length - 1 && currentFile) {
-      html += `<span class="current">${p}</span>`;
-    } else {
-      html += `<span class="crumb" onclick="navigate('${a}')">${p}</span>`;
-    }
+    html += `<span class="crumb" onclick="navigate('${a}')">${p}</span>`;
   });
   document.getElementById('breadcrumb').innerHTML = html;
 }
@@ -452,16 +286,11 @@ function renderBreadcrumb(path) {
 // ── 目录加载 ──
 async function navigate(path) {
   currentPath = path;
-  currentFile = null;
-
-  // 切换显示
-  document.getElementById('dir-view').style.display = '';
-  document.getElementById('preview-wrap').classList.remove('active');
 
   renderBreadcrumb(path);
 
   const apiPath = '/__api__/' + (path ? path + '/' : '');
-  document.getElementById('dir-view').innerHTML = '<div class="loading">加载中...</div>';
+  document.getElementById('dir-view').textContent = '加载中...';
 
   try {
     const r = await fetch(apiPath, {cache:'no-store'});
@@ -494,10 +323,10 @@ async function navigate(path) {
 
     files.forEach(e => {
       const filePath = path ? path + '/' + e.name : e.name;
-      rows += `<div class="file-row" onclick="openFile('${filePath}', ${e.size})">
+      rows += `<div class="file-row" onclick="openFile('${filePath}')">
         <div class="icon">📄</div>
         <div class="name">${e.name}</div>
-        <div class="size">${humanSize(e.size)}</div>
+        <div class="size">${e.size < 1024 ? e.size + ' B' : e.size < 1048576 ? (e.size/1024).toFixed(1) + ' KB' : (e.size/1048576).toFixed(1) + ' MB'}</div>
       </div>`;
     });
 
@@ -510,84 +339,13 @@ async function navigate(path) {
       ${rows}`;
 
   } catch(e) {
-    document.getElementById('dir-view').innerHTML =
-      `<div class="loading">加载失败：${e.message}</div>`;
+    document.getElementById('dir-view').textContent = '加载失败：' + e.message;
   }
 }
 
-// ── 文件预览 ──
-async function openFile(filePath, size) {
-  currentFile = filePath;
-
-  const parts = filePath.split('/');
-  const name = parts[parts.length - 1];
-  const dirPath = parts.slice(0, -1).join('/');
-
-  document.getElementById('dir-view').style.display = 'none';
-  document.getElementById('preview-wrap').classList.add('active');
-
-  renderBreadcrumb(filePath);
-
-  const dlUrl = '/' + filePath;
-  document.getElementById('dl-btn').href = dlUrl;
-  document.getElementById('dl-btn').download = name;
-  document.getElementById('preview-meta').innerHTML =
-    `<span style="color:var(--text2)">${dirPath ? dirPath + '/' : ''}</span><strong>${name}</strong>` +
-    `<span style="color:var(--text2);margin-left:12px">${humanSize(size)}</span>`;
-
-  const codeWrap = document.getElementById('code-wrap');
-
-  const MAX_PREVIEW = 500 * 1024; // 500 KB
-
-  if (!isText(name)) {
-    // 二进制：提示下载，触发浏览器下载
-    codeWrap.innerHTML = `<div class="binary-notice">
-      <div class="big">📦</div>
-      二进制文件，<a href="${dlUrl}" download style="color:var(--accent)">点击下载</a>
-    </div>`;
-    const a = document.createElement('a');
-    a.href = dlUrl; a.download = name; a.click();
-    return;
-  }
-
-  if (size > MAX_PREVIEW) {
-    codeWrap.innerHTML = `<div class="binary-notice">
-      <div class="big">📄</div>
-      文件超过 500 KB（${humanSize(size)}），不支持在线预览，<a href="${dlUrl}" download style="color:var(--accent)">点击下载</a>
-    </div>`;
-    return;
-  }
-
-  codeWrap.innerHTML = '<div class="loading">加载中...</div>';
-
-  try {
-    const r = await fetch('/__raw__/' + filePath, {cache:'no-store'});
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const text = await r.text();
-    const lines = text.split('\n');
-
-    let rows = '';
-    lines.forEach((line, i) => {
-      const escaped = line
-        .replace(/&/g,'&amp;')
-        .replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;');
-      rows += `<tr><td class="ln">${i+1}</td><td class="lc">${escaped}</td></tr>`;
-    });
-
-    codeWrap.innerHTML = `<table class="line-table"><tbody>${rows}</tbody></table>`;
-  } catch(e) {
-    codeWrap.innerHTML = `<div class="loading">加载失败：${e.message}</div>`;
-  }
-}
-
-function backToDir() {
-  const dirPath = currentFile
-    ? currentFile.includes('/')
-      ? currentFile.slice(0, currentFile.lastIndexOf('/'))
-      : ''
-    : currentPath;
-  navigate(dirPath);
+// ── 文件：直接跳转原始 URL ──
+function openFile(filePath) {
+  window.location.href = '/' + filePath;
 }
 
 // 初始化
