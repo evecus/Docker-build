@@ -29,7 +29,7 @@ jobs:
           file: ./fileserver/Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: evecus/fileserver:argo
+          tags: evecus/fileserver:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
