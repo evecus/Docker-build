@@ -9,7 +9,7 @@ RUN apk add --no-cache bash curl tar jq ca-certificates gcompat && \
 
 RUN mkdir -p /etc/sing-box /usr/local/bin
 
-COPY entrypoint.sh /entrypoint.sh
+COPY e.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENV GOGC=50
