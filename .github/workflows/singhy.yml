@@ -2,8 +2,6 @@ name: singhy
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 8 */5 * *'
 
 jobs:
   check-version:
@@ -85,7 +83,8 @@ jobs:
           file: ./singhy/Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: evecus/singhy:1.12.22
+                evecus/singhy:latest
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
