@@ -1,7 +1,11 @@
 # ---------- 第一阶段：下载二进制 ----------
 FROM alpine:3.19 AS builder
 
-RUN apk add --no-cache curl tar
+RUN apk add --no-cache bash curl tar jq ca-certificates gcompat && \
+    case "$(uname -m)" in \
+      x86_64)  ln -sf /lib/ld-musl-x86_64.so.1  /lib/ld-linux-x86-64.so.2 ;; \
+      aarch64) ln -sf /lib/ld-musl-aarch64.so.1 /lib/ld-linux-aarch64.so.1 ;; \
+    esac
 
 ARG TARGETARCH
 # 修复：补充 AS builder 命名；用 TARGETARCH 替换 uname -m，支持交叉编译
