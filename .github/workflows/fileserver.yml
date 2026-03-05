@@ -32,14 +32,3 @@ jobs:
           tags: evecus/fileserver:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Build and Push no
-        uses: docker/build-push-action@v5
-        with:
-          context: ./fileserver
-          file: ./fileserver/Dockerfile_no
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: evecus/fileserver:noargo
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
