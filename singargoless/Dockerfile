@@ -16,7 +16,7 @@ RUN set -eux; \
       *) echo "unsupported arch: $TARGETARCH" && exit 1 ;; \
     esac; \
     curl -Lo /tmp/sing-box.tar.gz \
-      https://github.com/SagerNet/sing-box/releases/download/v${SB_VERSION}/sing-box-${SB_VERSION}-linux-${SB_ARCH}.tar.gz; \
+      https://github.com/SagerNet/sing-box/releases/download/v1.12.22/sing-box-1.12.22-linux-${SB_ARCH}.tar.gz; \
     tar -xzf /tmp/sing-box.tar.gz -C /tmp; \
     mv /tmp/sing-box-*/sing-box /usr/local/bin/sing-box; \
     chmod +x /usr/local/bin/sing-box
@@ -38,11 +38,7 @@ FROM alpine:latest
 
 # gcompat 提供 glibc 兼容层，sing-box 动态链接了 glibc 符号需要它
 # 符号链接让 ELF interpreter 路径能被 Alpine 的 musl 链接器接管
-RUN apk add --no-cache bash ca-certificates curl gcompat && \
-    case "$(uname -m)" in \
-      x86_64)  ln -sf /lib/ld-musl-x86_64.so.1    /lib/ld-linux-x86-64.so.2 ;; \
-      aarch64) ln -sf /lib/ld-musl-aarch64.so.1   /lib/ld-linux-aarch64.so.1 ;; \
-    esac
+RUN apk add --no-cache bash curl tar jq ca-certificates gcompat
 
 RUN mkdir -p /etc/sing-box
 
