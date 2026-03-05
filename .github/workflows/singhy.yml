@@ -83,8 +83,9 @@ jobs:
           file: ./singhy/Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: evecus/singhy:1.12.22
-                evecus/singhy:latest
+          tags: |
+            evecus/singhy:1.12.22
+            evecus/singhy:latest
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
