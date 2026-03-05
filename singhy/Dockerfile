@@ -1,11 +1,7 @@
 # ---------- 第一阶段：下载 sing-box ----------
 FROM alpine:3.19 AS builder
 
-RUN apk add --no-cache bash curl tar jq ca-certificates gcompat && \
-    case "$(uname -m)" in \
-      x86_64)  ln -sf /lib/ld-musl-x86_64.so.1  /lib/ld-linux-x86-64.so.2 ;; \
-      aarch64) ln -sf /lib/ld-musl-aarch64.so.1 /lib/ld-linux-aarch64.so.1 ;; \
-    esac
+RUN apk add --no-cache curl tar
 
 ARG TARGETARCH
 # 修复：补充 AS builder 命名，并使用 TARGETARCH 支持多架构，移除硬编码 amd64
