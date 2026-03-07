@@ -21,10 +21,10 @@
 ```bash
 docker run -d \
   -p 8080:8080 \
-  -e REPOSITORIES=" github用户名/仓库名/分支1 github用户名/仓库名/分支2" \
+  -e U=admin \
+  -e P=yourpassword \
   -v /host/data:/data \
-  --name fileserver \
-  evecus/fileserver:latest
+  evecus/filesmanager:latest
 ```
 
 访问 `http://localhost:8080` 即可查看文件列表。
