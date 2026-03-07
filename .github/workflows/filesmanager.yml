@@ -28,7 +28,7 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            evecus/fileserver:${{ github.event.inputs.version }}
-            evecus/fileserver:latest
+            evecus/filesmanager:${{ github.event.inputs.version }}
+            evecus/filesmanager:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
