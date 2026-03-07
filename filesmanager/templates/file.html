@@ -1,0 +1,341 @@
+{{define "file.html"}}<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{.Name}} — FileServer</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #f6f8fa;
+    color: #1f2328;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  .header {
+    background: #ffffff;
+    border-bottom: 1px solid #d0d7de;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1f2328;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo svg { color: #6e40c9; }
+
+  .container { max-width: 1012px; margin: 0 auto; padding: 24px 16px; }
+
+  /* Breadcrumb */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    flex-wrap: wrap;
+  }
+  .breadcrumb a { color: #0969da; text-decoration: none; font-weight: 600; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  .breadcrumb .sep { color: #57606a; margin: 0 2px; }
+  .breadcrumb .current { color: #1f2328; font-weight: 600; }
+
+  /* File card */
+  .file-box {
+    background: #ffffff;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .file-header {
+    background: #f6f8fa;
+    border-bottom: 1px solid #d0d7de;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .file-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #57606a;
+  }
+
+  .file-meta .filename {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2328;
+  }
+
+  .badge {
+    background: #eaeef2;
+    border: 1px solid #d0d7de;
+    border-radius: 20px;
+    padding: 1px 8px;
+    font-size: 12px;
+    color: #57606a;
+  }
+
+  /* Actions */
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid #d0d7de;
+    background: #f6f8fa;
+    color: #24292f;
+    transition: background 0.1s, border-color 0.1s;
+  }
+  .btn:hover { background: #eaeef2; border-color: #bbc0c4; }
+  .btn-dl { color: #0969da; border-color: #b6d0f7; background: #ddf4ff; }
+  .btn-dl:hover { background: #b6d0f7; }
+
+  /* Wget */
+  .wget-box {
+    border-bottom: 1px solid #d0d7de;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #ffffff;
+    flex-wrap: wrap;
+  }
+  .wget-label { font-size: 12px; color: #57606a; white-space: nowrap; }
+  .wget-cmd {
+    flex: 1;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    color: #0550ae;
+    background: #f6f8fa;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    padding: 5px 10px;
+    white-space: nowrap;
+    overflow-x: auto;
+    min-width: 0;
+  }
+  .copy-btn {
+    background: #f6f8fa;
+    border: 1px solid #d0d7de;
+    color: #57606a;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.1s;
+  }
+  .copy-btn:hover { background: #eaeef2; color: #1f2328; }
+  .copy-btn.copied { color: #1a7f37; border-color: #2da44e; background: #dafbe1; }
+
+  /* Code */
+  .code-wrap {
+    overflow-x: auto;
+    display: flex;
+  }
+
+  .line-numbers {
+    min-width: 48px;
+    padding: 16px 0;
+    text-align: right;
+    border-right: 1px solid #d0d7de;
+    background: #f6f8fa;
+    user-select: none;
+    flex-shrink: 0;
+  }
+  .line-num {
+    display: block;
+    padding: 0 12px;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #8c959f;
+  }
+
+  .code-content {
+    flex: 1;
+    padding: 16px;
+    overflow-x: auto;
+    min-width: 0;
+  }
+  .code-content pre { margin: 0; }
+  .code-content code {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace !important;
+    font-size: 12px !important;
+    line-height: 1.6;
+    background: none !important;
+    padding: 0 !important;
+  }
+
+  /* Image */
+  .img-box {
+    padding: 32px;
+    display: flex;
+    justify-content: center;
+    background: #ffffff;
+  }
+  .img-box img {
+    max-width: 100%;
+    max-height: 600px;
+    border-radius: 6px;
+    border: 1px solid #d0d7de;
+  }
+
+  /* Binary */
+  .binary-box {
+    padding: 48px;
+    text-align: center;
+    background: #ffffff;
+  }
+  .binary-icon { font-size: 40px; margin-bottom: 12px; }
+  .binary-msg { color: #57606a; font-size: 14px; margin-bottom: 20px; }
+
+  @media (max-width: 600px) {
+    .container { padding: 16px 12px; }
+    .header { padding: 12px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <a href="/" class="logo">
+    <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.486 2.486 0 0 1 4.5 9h8Z"/>
+    </svg>
+    FileServer
+  </a>
+</header>
+
+<main class="container">
+  <nav class="breadcrumb">
+    {{range $i, $p := .Parts}}
+      {{if $i}}<span class="sep">/</span>{{end}}
+      {{if eq $i (add (len $.Parts) -1)}}
+        <span class="current">{{$p.Name}}</span>
+      {{else}}
+        <a href="{{$p.Path}}">{{$p.Name}}</a>
+      {{end}}
+    {{end}}
+  </nav>
+
+  <div class="file-box">
+    <div class="file-header">
+      <div class="file-meta">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="#57606a">
+          <path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 9 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"/>
+        </svg>
+        <span class="filename">{{.Name}}</span>
+        <span class="badge">{{formatSize .Size}}</span>
+      </div>
+      <div class="actions">
+        <a class="btn" href="{{.RawURL}}" target="_blank">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M0 3.75A.75.75 0 0 1 .75 3h14.5a.75.75 0 0 1 0 1.5H.75A.75.75 0 0 1 0 3.75Zm0 4A.75.75 0 0 1 .75 7h14.5a.75.75 0 0 1 0 1.5H.75A.75.75 0 0 1 0 7.75Zm0 4a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H.75a.75.75 0 0 1-.75-.75Z"/></svg>
+          Raw
+        </a>
+        <a class="btn btn-dl" href="{{.RawURL}}" download="{{.Name}}">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Zm-1-5.573 3.25 3.25a.75.75 0 0 0 1.06 0L9.31 8.427a.75.75 0 0 0-1.06-1.06l-1.75 1.75V2.75a.75.75 0 0 0-1.5 0v6.367l-1.75-1.75a.75.75 0 0 0-1.06 1.06Z"/></svg>
+          Download
+        </a>
+      </div>
+    </div>
+
+    <div class="wget-box">
+      <span class="wget-label">wget</span>
+      <span class="wget-cmd" id="wgetCmd">{{.WgetCmd}}</span>
+      <button class="copy-btn" id="copyBtn" onclick="copyWget()">Copy</button>
+    </div>
+
+    {{if .IsImage}}
+    <div class="img-box">
+      <img src="data:{{.ImageMime}};base64,{{.ImageB64}}" alt="{{.Name}}">
+    </div>
+
+    {{else if .IsTooBig}}
+    <div class="binary-box">
+      <div class="binary-icon">📄</div>
+      <div class="binary-msg">文件超过 500 KB，不支持在线预览。</div>
+      <a class="btn btn-dl" href="{{.RawURL}}" download="{{.Name}}" style="display:inline-flex;margin:0 auto">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Zm-1-5.573 3.25 3.25a.75.75 0 0 0 1.06 0L9.31 8.427a.75.75 0 0 0-1.06-1.06l-1.75 1.75V2.75a.75.75 0 0 0-1.5 0v6.367l-1.75-1.75a.75.75 0 0 0-1.06 1.06Z"/></svg>
+        Download {{.Name}}
+      </a>
+    </div>
+
+    {{else if .IsText}}
+    <div class="code-wrap">
+      <div class="line-numbers" id="lineNums"></div>
+      <div class="code-content">
+        <pre><code id="codeBlock" class="language-{{langClass .Ext}}">{{.Content}}</code></pre>
+      </div>
+    </div>
+
+    {{else}}
+    <div class="binary-box">
+      <div class="binary-icon">📦</div>
+      <div class="binary-msg">This file cannot be previewed in the browser.</div>
+      <a class="btn btn-dl" href="{{.RawURL}}" download="{{.Name}}" style="display:inline-flex;margin:0 auto">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Zm-1-5.573 3.25 3.25a.75.75 0 0 0 1.06 0L9.31 8.427a.75.75 0 0 0-1.06-1.06l-1.75 1.75V2.75a.75.75 0 0 0-1.5 0v6.367l-1.75-1.75a.75.75 0 0 0-1.06 1.06Z"/></svg>
+        Download {{.Name}}
+      </a>
+    </div>
+    {{end}}
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+  const block = document.getElementById('codeBlock');
+  if (block) {
+    hljs.highlightElement(block);
+    const lines = block.textContent.split('\n');
+    const count = lines[lines.length - 1] === '' ? lines.length - 1 : lines.length;
+    const nums = document.getElementById('lineNums');
+    for (let i = 1; i <= count; i++) {
+      const span = document.createElement('span');
+      span.className = 'line-num';
+      span.textContent = i;
+      nums.appendChild(span);
+    }
+  }
+
+  function copyWget() {
+    const cmd = document.getElementById('wgetCmd').textContent;
+    navigator.clipboard.writeText(cmd).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = '✓ Copied';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+</script>
+</body>
+</html>{{end}}
