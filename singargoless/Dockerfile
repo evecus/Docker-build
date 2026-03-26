@@ -16,7 +16,7 @@ RUN set -eux; \
       *) echo "unsupported arch: $TARGETARCH" && exit 1 ;; \
     esac; \
     curl -Lo /tmp/sing-box.tar.gz \
-      https://github.com/SagerNet/sing-box/releases/download/v1.12.22/sing-box-1.12.22-linux-${SB_ARCH}.tar.gz; \
+      https://github.com/SagerNet/sing-box/releases/download/v${SB_VERSION}/sing-box-${SB_VERSION}-linux-${SB_ARCH}-musl.tar.gz; \
     tar -xzf /tmp/sing-box.tar.gz -C /tmp; \
     mv /tmp/sing-box-*/sing-box /usr/local/bin/sing-box; \
     chmod +x /usr/local/bin/sing-box
