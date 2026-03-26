@@ -94,7 +94,7 @@ jobs:
             SB_VER_TAG=${{ needs.check-version.outputs.sb_ver }}
             CF_VER_TAG=${{ needs.check-version.outputs.cf_ver }}
           tags: |
-            evecus/singargoless:$SB_VER
+            evecus/singargoless:${{ needs.check-version.outputs.sb_ver }}
             evecus/singargoless:latest
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
